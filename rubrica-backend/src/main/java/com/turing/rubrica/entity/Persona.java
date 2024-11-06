@@ -1,22 +1,34 @@
 package com.turing.rubrica.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "persone")
 public class Persona {
     
+    @Id
+    @GeneratedValue
     private int id;
     private String nome;
     private String cognome;
     private String indirizzo;
+    @Column(length=18, unique=true)
     private String telefono;
-    private int eta;
+    private Integer eta;
 
-    public Persona(String nome, String cognome, String indirizzo, String telefono, int eta) {
+    public Persona(String nome, String cognome, String indirizzo, String telefono, Integer eta) {
         this.nome = nome;
         this.cognome = cognome;
         this.indirizzo = indirizzo;
         this.telefono = telefono;
-        this.eta = eta;
+        if(eta != null) this.eta = eta;
     }
+    
+    public Persona() {}
 
     public String getNome() {
         return nome;
@@ -46,7 +58,7 @@ public class Persona {
         this.telefono = telefono;
     }
 
-    public int getEta() {
+    public Integer getEta() {
         return eta;
     }
     public void setEta(int eta) {

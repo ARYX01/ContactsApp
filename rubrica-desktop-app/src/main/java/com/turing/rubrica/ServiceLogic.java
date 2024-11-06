@@ -26,7 +26,7 @@ public class ServiceLogic {
         return contacts;
     }
     
-    public void addContact(String name, String surname, String address, String phoneNo, int age) {
+    public void addContact(String name, String surname, String address, String phoneNo, Integer age) {
         int lastId = 0;
         if(!contacts.isEmpty())
             lastId = contacts.get(contacts.size()-1).getId();
@@ -34,6 +34,20 @@ public class ServiceLogic {
         contact.setId(lastId+1);
         contacts.add(contact);
     }
+    
+    public void editContact(int id, String name, String surname, String address, String phoneNo, Integer age) {
+        Optional<Persona> contactToEditFind = contacts.stream().filter(x -> x.getId()==id).findFirst();
+        if(!contactToEditFind.isPresent())
+            return;
+            
+        Persona contactToEdit = contactToEditFind.get();
+        contactToEdit.setNome(name);
+        contactToEdit.setCognome(surname);
+        contactToEdit.setIndirizzo(address);
+        contactToEdit.setTelefono(phoneNo);
+        if(age!=null) contactToEdit.setEta(age);
+    }
+   
     
     public void deleteContact(int id){
         Optional<Persona> contactToDelete = contacts.stream().filter(x -> x.getId()==id).findFirst();
