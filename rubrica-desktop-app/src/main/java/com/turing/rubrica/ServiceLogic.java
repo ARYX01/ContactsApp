@@ -1,25 +1,44 @@
 package com.turing.rubrica;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turing.rubrica.entity.Persona;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.client.RestTemplate;
 
+enum AppMode {
+  LOCAL,
+  WEB
+}
 
 public class ServiceLogic {
     
     private static final String LOCAL_SAVE_FILE_NAME = "informazioni.txt";
     private final List<Persona> contacts;
+    
+    private String apiBasePath;
+    private RestTemplate restTemplate = new RestTemplateBuilder().build();
+    
+    private AppMode appMode;
 
     public ServiceLogic() {
         contacts = new ArrayList<>();
+        readAppProperties();
         
         //TEST
 //        Persona personaTest1 = new Persona("Pippo", "Baudo", "via fritto misto", "342534", 99);
@@ -29,30 +48,49 @@ public class ServiceLogic {
 //        personaTest2.setId(1);
 //        contacts.add(personaTest2);
         
-        //TODO check connection to db
-        try {
-            loadContactsFromFile();
-        } catch (IOException ex) {
-            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, null, ex);
+        // Check connection to backend
+        try{
+            loadContactsFromBackend();
+            appMode = AppMode.WEB;
+        }catch(Exception e){
+            // If can't connect to backend switch to local mode
+            try {
+                loadContactsFromFile();
+                appMode = AppMode.LOCAL;
+            } catch (IOException ex) {
+                Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
+         
     }
 
     public List<Persona> getContacts() {
         return contacts;
     }
     
-    public void addContact(String name, String surname, String address, String phoneNo, Integer age) {
-        int lastId = 0;
-        if(!contacts.isEmpty())
-            lastId = contacts.get(contacts.size()-1).getId();
-        Persona contact = new Persona(name, surname, address, phoneNo, age);
-        contact.setId(lastId+1);
-        contacts.add(contact);
-
-        saveContactsToFile();
+    public AppMode getAppMode() {
+        return appMode;
     }
     
-    public void editContact(int id, String name, String surname, String address, String phoneNo, Integer age) {
+    public void addContact(String name, String surname, String address, String phoneNo, Integer age) throws Exception {
+        Persona contactToAdd = new Persona(name, surname, address, phoneNo, age);
+
+        if(appMode==AppMode.LOCAL){
+            int lastId = 0;
+            if(!contacts.isEmpty())
+                lastId = contacts.get(contacts.size()-1).getId();
+            contactToAdd.setId(lastId+1);
+            contacts.add(contactToAdd);
+            saveContactsToFile();
+        }
+        if(appMode==AppMode.WEB){
+            Persona savedContact = saveContactToWeb(contactToAdd, "/addContact");
+            contacts.add(savedContact);
+        }
+
+    }
+    
+    public void editContact(int id, String name, String surname, String address, String phoneNo, Integer age) throws Exception {
         Optional<Persona> contactToEditFind = contacts.stream().filter(x -> x.getId()==id).findFirst();
         if(!contactToEditFind.isPresent())
             return;
@@ -64,16 +102,23 @@ public class ServiceLogic {
         contactToEdit.setTelefono(phoneNo);
         if(age!=null) contactToEdit.setEta(age);
 
-        saveContactsToFile();
+        if(appMode==AppMode.LOCAL)
+            saveContactsToFile();
+        if(appMode==AppMode.WEB)
+            saveContactToWeb(contactToEdit, "/editContact");
     }
    
     
-    public void deleteContact(int id){
+    public void deleteContact(int id) throws Exception{
         Optional<Persona> contactToDelete = contacts.stream().filter(x -> x.getId()==id).findFirst();
         if(!contactToDelete.isPresent())
             return;
+        contacts.remove(contactToDelete.get());
         
-        saveContactsToFile();
+        if(appMode==AppMode.LOCAL)
+            saveContactsToFile();
+        if(appMode==AppMode.WEB)
+            deleteContactToWeb(id);
     }
     
     private void loadContactsFromFile() throws IOException{
@@ -87,7 +132,7 @@ public class ServiceLogic {
             contacts.add(p);
         });
     }
-    private void saveContactsToFile(){
+    private void saveContactsToFile() throws Exception{
         System.out.println("SAVING TO FILE");
         try {
             PrintWriter writer = new PrintWriter(LOCAL_SAVE_FILE_NAME);
@@ -99,6 +144,7 @@ public class ServiceLogic {
             writer.close();
         } catch (IOException ex) {
             Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, null, ex);
+            throw new Exception("File di salvataggio inacessibile o corrotto");
         }
     }
 //    private void appendContactToFile(Persona p) throws IOException{
@@ -108,6 +154,90 @@ public class ServiceLogic {
 //        System.out.println(contactLine);
 //        writer.append(contactLine);
 //        writer.close();
+//    }
+    
+    private void readAppProperties() {
+        try (InputStream input = ServiceLogic.class.getClassLoader().getResourceAsStream("app.config")) {
+
+            Properties prop = new Properties();
+
+            if (input == null) {
+                Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile trovare il file di configurazione: application.properties");
+                return;
+            }
+            prop.load(input);
+            String apiPathTemp = prop.getProperty("backend.apiPath");
+            if(apiPathTemp==null || apiPathTemp.isBlank())
+                Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, proprietà 'backend.apiPath' non asseganta o inesistente");
+            apiBasePath = apiPathTemp;
+        } catch (IOException ex) {
+            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void loadContactsFromBackend() throws Exception{
+        contacts.clear();
+        System.out.println("apiBasePath: "+apiBasePath);
+        try{
+            // Make GET request
+            ResponseEntity<Persona[]> response = restTemplate.getForEntity(apiBasePath+"/getContacts", Persona[].class);
+
+            // Deserialize the response to a Java object
+            Persona[] contactsFromBackend = response.getBody();
+            Collections.addAll(contacts, contactsFromBackend);
+        } catch(org.springframework.web.client.ResourceAccessException e){
+            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile connettersi");
+            throw new Exception("Impossibile stabilire una connessione con il server");
+        }
+    }
+    
+    private void deleteContactToWeb(int id) throws Exception{
+        try{
+            // Make DELETE request
+            restTemplate.delete(apiBasePath+"/deleteContact/"+id);
+        } catch(org.springframework.web.client.ResourceAccessException e){
+            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile connettersi");
+            throw new Exception("Impossibile stabilire una connessione con il server");
+        } catch(RestClientResponseException e){
+            // Deserialize api request error
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> map = mapper.readValue(e.getResponseBodyAsString(), Map.class);
+            throw new Exception(map.get("message").toString());
+        }
+    }
+    
+    private Persona saveContactToWeb(Persona p, String endpoint) throws Exception{
+        try{
+            // Make POST request
+            Persona response = restTemplate.postForObject(apiBasePath+endpoint, p, Persona.class);
+            if(response==null)
+                throw new Exception("Persona non salvata");
+            return response;
+        } catch(org.springframework.web.client.ResourceAccessException e){
+            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile connettersi");
+            throw new Exception("Impossibile stabilire una connessione con il server");
+        } catch(RestClientResponseException e){
+            // Deserialize api request error
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> map = mapper.readValue(e.getResponseBodyAsString(), Map.class);
+            throw new Exception(map.get("message").toString());
+        }
+    }
+//    private void editContactToWeb(Persona p) throws Exception{
+//        try{
+//            // Make POST request
+//            Persona response = restTemplate.postForObject(apiBasePath+"/editContact", p, Persona.class);
+//            if(response==null)
+//                throw new Exception("Persona non salvata");
+//        } catch(org.springframework.web.client.ResourceAccessException e){
+//            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile connettersi");
+//            throw new Exception("Impossibile stabilire una connessione con il server");
+//        } catch(RestClientResponseException e){
+//            // Deserialize api request error
+//            ObjectMapper mapper = new ObjectMapper();
+//            Map<String, Object> map = mapper.readValue(e.getResponseBodyAsString(), Map.class);
+//            throw new Exception(map.get("message").toString());
+//        }
 //    }
     
     

@@ -20,6 +20,11 @@ public class RubricaApp extends JFrame {
     public RubricaApp() {
         initComponents();
         fillTable();
+        AppMode appMode = service.getAppMode();
+        if(appMode==AppMode.LOCAL)
+            setTitle("Rubrica - LOCAL");
+        if(appMode==AppMode.WEB)
+            setTitle("Rubrica - ONLINE");
     }
 
     @SuppressWarnings("unchecked")
@@ -295,12 +300,22 @@ public class RubricaApp extends JFrame {
         // Edit contact
         if(!id.isBlank()){
             System.out.println("id: "+id);
-            service.editContact(Integer.parseInt(id), name, surname, address, phoneNo, tmpAge);
+            try {
+                service.editContact(Integer.parseInt(id), name, surname, address, phoneNo, tmpAge);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(jPanelMain, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             fillTable();
         }
         // New contact
         else{
-            service.addContact(name, surname, address, phoneNo, tmpAge);
+            try {
+                service.addContact(name, surname, address, phoneNo, tmpAge);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(jPanelMain, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             // Add contact to jTableRubrica
             DefaultTableModel model = (DefaultTableModel) jTableRubrica.getModel();
             Object[] rowPersona = new Object[]{name, surname, phoneNo};
@@ -328,7 +343,12 @@ public class RubricaApp extends JFrame {
 
         // if confirm is YES delete from contacts
         if(res==0){
-            service.deleteContact(selected.getId());
+            try {
+                service.deleteContact(selected.getId());
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(jPanelMain, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             DefaultTableModel model = (DefaultTableModel) jTableRubrica.getModel();
             model.removeRow(row);
         }

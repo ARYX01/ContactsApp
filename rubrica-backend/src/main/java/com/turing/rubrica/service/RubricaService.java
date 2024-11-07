@@ -36,7 +36,7 @@ public class RubricaService {
             return personaRepository.save(p);
         }catch(Exception e){
             if(e.getMessage().contains("Duplicate"))
-            throw new Exception("Numero di telefono gia assegnato a una persona");
+            throw new Exception("Numero di telefono già assegnato a una persona");
         }
         return null;
     }
