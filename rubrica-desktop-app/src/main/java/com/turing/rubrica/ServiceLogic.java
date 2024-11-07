@@ -47,21 +47,23 @@ public class ServiceLogic {
 //        Persona personaTest2 = new Persona("Test", "Rest", "via tombolo", "0000000", 1);
 //        personaTest2.setId(1);
 //        contacts.add(personaTest2);
+    }
+    
+    public void login(String username, String password) throws Exception{
+        // TODO LOGIN API
         
         // Check connection to backend
-        try{
-            loadContactsFromBackend();
-            appMode = AppMode.WEB;
-        }catch(Exception e){
-            // If can't connect to backend switch to local mode
-            try {
-                loadContactsFromFile();
-                appMode = AppMode.LOCAL;
-            } catch (IOException ex) {
-                Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        loadContactsFromBackend();
+        appMode = AppMode.WEB;
+    
+    }
+    public void loadLocalMode(){
+        try {
+            loadContactsFromFile();
+            appMode = AppMode.LOCAL;
+        } catch (IOException ex) {
+            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, null, ex);
         }
-         
     }
 
     public List<Persona> getContacts() {

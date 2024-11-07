@@ -19,19 +19,27 @@ public class RubricaApp extends JFrame {
 
     public RubricaApp() {
         initComponents();
-        fillTable();
-        AppMode appMode = service.getAppMode();
-        if(appMode==AppMode.LOCAL)
-            setTitle("Rubrica - LOCAL");
-        if(appMode==AppMode.WEB)
-            setTitle("Rubrica - ONLINE");
     }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
+        jPanelLogin = new javax.swing.JPanel();
+        jPanelLoginForm = new javax.swing.JPanel();
+        jLabelLoginTitle = new javax.swing.JLabel();
+        jLabelUsername = new javax.swing.JLabel();
+        jTextFieldUsername = new javax.swing.JTextField();
+        jLabelPassword = new javax.swing.JLabel();
+        jPasswordField = new javax.swing.JPasswordField();
+        jPanelLoginActions = new javax.swing.JPanel();
+        jButtonLogin = new javax.swing.JButton();
+        jLabelLoginModeSwitch = new javax.swing.JLabel();
+        jButtonLocalMode = new javax.swing.JButton();
         jPanelMain = new javax.swing.JPanel();
+        jToolBar1 = new javax.swing.JToolBar();
+        jButtonLogout = new javax.swing.JButton();
         jScrollPaneRubrica = new javax.swing.JScrollPane();
         jTableRubrica = new javax.swing.JTable();
         jSeparator1 = new javax.swing.JSeparator();
@@ -63,13 +71,116 @@ public class RubricaApp extends JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Rubrica");
         setMinimumSize(new java.awt.Dimension(550, 650));
-        setPreferredSize(null);
         setResizable(false);
         getContentPane().setLayout(new java.awt.CardLayout());
+
+        jPanelLogin.setAlignmentX(0.5F);
+        jPanelLogin.setFocusable(false);
+        jPanelLogin.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
+        jPanelLogin.setMinimumSize(new java.awt.Dimension(500, 600));
+        jPanelLogin.setPreferredSize(new java.awt.Dimension(230, 376));
+        jPanelLogin.setLayout(new javax.swing.BoxLayout(jPanelLogin, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanelLoginForm.setBorder(javax.swing.BorderFactory.createEmptyBorder(15, 5, 0, 5));
+        jPanelLoginForm.setMaximumSize(new java.awt.Dimension(32767, 220));
+        jPanelLoginForm.setMinimumSize(new java.awt.Dimension(2147483639, 20));
+        jPanelLoginForm.setLayout(new java.awt.GridLayout(5, 0));
+
+        jLabelLoginTitle.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabelLoginTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelLoginTitle.setText("Login");
+        jLabelLoginTitle.setMaximumSize(new java.awt.Dimension(2147483647, 25));
+        jLabelLoginTitle.setMinimumSize(new java.awt.Dimension(2147483647, 25));
+        jLabelLoginTitle.setPreferredSize(null);
+        jPanelLoginForm.add(jLabelLoginTitle);
+
+        jLabelUsername.setLabelFor(jTextFieldUsername);
+        jLabelUsername.setText("Utente");
+        jLabelUsername.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        jLabelUsername.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 2, 2));
+        jPanelLoginForm.add(jLabelUsername);
+
+        jTextFieldUsername.setMaximumSize(new java.awt.Dimension(2147483647, 26));
+        jPanelLoginForm.add(jTextFieldUsername);
+
+        jLabelPassword.setLabelFor(jPasswordField);
+        jLabelPassword.setText("Password");
+        jLabelPassword.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        jLabelPassword.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 2, 2));
+        jPanelLoginForm.add(jLabelPassword);
+
+        jPasswordField.setMaximumSize(new java.awt.Dimension(2147483647, 26));
+        jPanelLoginForm.add(jPasswordField);
+
+        jPanelLogin.add(jPanelLoginForm);
+
+        jPanelLoginActions.setMaximumSize(new java.awt.Dimension(2147483647, 190));
+        jPanelLoginActions.setMinimumSize(new java.awt.Dimension(10, 27));
+        jPanelLoginActions.setLayout(new java.awt.GridBagLayout());
+
+        jButtonLogin.setText("Accedi");
+        jButtonLogin.setMargin(new java.awt.Insets(2, 20, 2, 20));
+        jButtonLogin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLoginActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.ipady = 8;
+        jPanelLoginActions.add(jButtonLogin, gridBagConstraints);
+
+        jLabelLoginModeSwitch.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelLoginModeSwitch.setText("oppure");
+        jLabelLoginModeSwitch.setFocusable(false);
+        jLabelLoginModeSwitch.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+        jLabelLoginModeSwitch.setIconTextGap(0);
+        jLabelLoginModeSwitch.setInheritsPopupMenu(false);
+        jLabelLoginModeSwitch.setMaximumSize(new java.awt.Dimension(2147483647, 16));
+        jLabelLoginModeSwitch.setName(""); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.ipady = 35;
+        jPanelLoginActions.add(jLabelLoginModeSwitch, gridBagConstraints);
+
+        jButtonLocalMode.setText("utilizza ambiente locale");
+        jButtonLocalMode.setMargin(new java.awt.Insets(2, 10, 2, 10));
+        jButtonLocalMode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLocalModeActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.ipady = 8;
+        jPanelLoginActions.add(jButtonLocalMode, gridBagConstraints);
+
+        jPanelLogin.add(jPanelLoginActions);
+
+        getContentPane().add(jPanelLogin, "cardLogin");
 
         jPanelMain.setFocusable(false);
         jPanelMain.setMinimumSize(new java.awt.Dimension(500, 600));
         jPanelMain.setLayout(new javax.swing.BoxLayout(jPanelMain, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jToolBar1.setMargin(new java.awt.Insets(0, 2, 2, 2));
+        jToolBar1.setMaximumSize(new java.awt.Dimension(2147483647, 28));
+
+        jButtonLogout.setText("Logout");
+        jButtonLogout.setFocusable(false);
+        jButtonLogout.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButtonLogout.setMaximumSize(new java.awt.Dimension(60, 24));
+        jButtonLogout.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButtonLogout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLogoutActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(jButtonLogout);
+
+        jPanelMain.add(jToolBar1);
 
         jScrollPaneRubrica.setMinimumSize(new java.awt.Dimension(500, 300));
 
@@ -272,12 +383,12 @@ public class RubricaApp extends JFrame {
 
     private void jButtonActionNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonActionNewActionPerformed
         jLabelEditTitle.setText("Nuovo contatto");
-        changePanel("edit");
+        changePanel("cardEdit");
     }//GEN-LAST:event_jButtonActionNewActionPerformed
 
     private void jButtonActionDiscardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonActionDiscardActionPerformed
         setEditInputs(null,"","","","",null);
-        changePanel("main");
+        changePanel("cardMain");
     }//GEN-LAST:event_jButtonActionDiscardActionPerformed
 
     private void jButtonActionSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonActionSaveActionPerformed
@@ -324,7 +435,7 @@ public class RubricaApp extends JFrame {
         
         // Close edit mode and go back to main list
         setEditInputs(null, "","","","",null);
-        changePanel("main");
+        changePanel("cardMain");
     }//GEN-LAST:event_jButtonActionSaveActionPerformed
 
     private void jButtonActionDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonActionDeleteActionPerformed
@@ -338,7 +449,8 @@ public class RubricaApp extends JFrame {
         Persona selected = service.getContacts().get(row);
 
         // Open confirm dialog
-        String[] options = {"Si","No"};int res = JOptionPane.showOptionDialog(jPanelMain, "Desideri eliminare la persona "+selected.getNome()+" ?", "Conferma", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        String[] options = {"Si","No"};
+        int res = JOptionPane.showOptionDialog(jPanelMain, "Desideri eliminare la persona "+selected.getNome()+" ?", "Conferma", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         //JOptionPane.showConfirmDialog(jPanelMain, "Desideri eliminare la persona "+selected.getNome()+" ?", "Conferma", JOptionPane.YES_NO_OPTION);
 
         // if confirm is YES delete from contacts
@@ -365,10 +477,36 @@ public class RubricaApp extends JFrame {
         jLabelEditTitle.setText("Modifica contatto");
         
         // Open edit mode and fill inputs
-        changePanel("edit");
+        changePanel("cardEdit");
         Persona selected = service.getContacts().get(row);
         setEditInputs(selected.getId(), selected.getNome(), selected.getCognome(), selected.getIndirizzo(), selected.getTelefono(), selected.getEta());
     }//GEN-LAST:event_jButtonActionEditActionPerformed
+
+    private void jButtonLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLoginActionPerformed
+        // Get fields from login form
+        String username = jTextFieldUsername.getText();
+        String password = new String(jPasswordField.getPassword());
+        try {
+            service.login(username, password);
+        } catch (Exception ex) {
+            String[] options = {"Si","No"};
+            int res = JOptionPane.showOptionDialog(jPanelMain, ex.getMessage()+"\nUtilizzare ambiente locale?", "Errore", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
+            if(res==1) //no
+                return;
+            service.loadLocalMode();
+        }
+        initMainCard();
+    }//GEN-LAST:event_jButtonLoginActionPerformed
+
+    private void jButtonLocalModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLocalModeActionPerformed
+        service.loadLocalMode();
+        initMainCard();
+    }//GEN-LAST:event_jButtonLocalModeActionPerformed
+
+    private void jButtonLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoutActionPerformed
+        changePanel("cardLogin");
+        setTitle("Rubrica");
+    }//GEN-LAST:event_jButtonLogoutActionPerformed
 
     
     public static void main(String args[]) {
@@ -388,10 +526,19 @@ public class RubricaApp extends JFrame {
     public void changePanel(String panel){
         java.awt.Container c = getContentPane();
         java.awt.CardLayout cl = (java.awt.CardLayout)c.getLayout();
-        if(panel.equalsIgnoreCase("main")) 
-            cl.first(c);
-        else
-            cl.last(c);
+        cl.show(c, panel);
+    }
+    
+    private void initMainCard(){
+        jTextFieldUsername.setText("");
+        jPasswordField.setText("");
+        fillTable();
+        AppMode appMode = service.getAppMode();
+        if(appMode==AppMode.LOCAL)
+            setTitle("Rubrica - LOCAL");
+        if(appMode==AppMode.WEB)
+            setTitle("Rubrica - ONLINE");
+        changePanel("cardMain");
     }
    
     
@@ -399,14 +546,12 @@ public class RubricaApp extends JFrame {
         DefaultTableModel model = (DefaultTableModel) jTableRubrica.getModel();
         model.setRowCount(0);
       
-        //FOR TESTING PURPOSES
+        // Fill each row of the table with service List of contacts
         List<Persona> contacts = service.getContacts();
         contacts.forEach(contact -> {
             Object[] rowPersona = new Object[]{contact.getNome(), contact.getCognome(), contact.getTelefono()};
             model.addRow(rowPersona);
         });
-        
-        
     }
     
     private void setEditInputs(Integer id, String name, String surname, String address, String phoneNo, Integer age){
@@ -430,18 +575,29 @@ public class RubricaApp extends JFrame {
     private javax.swing.JButton jButtonActionEdit;
     private javax.swing.JButton jButtonActionNew;
     private javax.swing.JButton jButtonActionSave;
+    private javax.swing.JButton jButtonLocalMode;
+    private javax.swing.JButton jButtonLogin;
+    private javax.swing.JButton jButtonLogout;
     private javax.swing.JFormattedTextField jFormattedTextFieldAge;
     private javax.swing.JLabel jLabelAddress;
     private javax.swing.JLabel jLabelAge;
     private javax.swing.JLabel jLabelEditTitle;
+    private javax.swing.JLabel jLabelLoginModeSwitch;
+    private javax.swing.JLabel jLabelLoginTitle;
     private javax.swing.JLabel jLabelName;
+    private javax.swing.JLabel jLabelPassword;
     private javax.swing.JLabel jLabelPhoneNo;
     private javax.swing.JLabel jLabelSurname;
+    private javax.swing.JLabel jLabelUsername;
     private javax.swing.JPanel jPanelActions;
     private javax.swing.JPanel jPanelActions1;
     private javax.swing.JPanel jPanelEditPersona;
+    private javax.swing.JPanel jPanelLogin;
+    private javax.swing.JPanel jPanelLoginActions;
+    private javax.swing.JPanel jPanelLoginForm;
     private javax.swing.JPanel jPanelMain;
     private javax.swing.JPanel jPanelPersonaForm;
+    private javax.swing.JPasswordField jPasswordField;
     private javax.swing.JScrollPane jScrollPaneRubrica;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
@@ -451,5 +607,7 @@ public class RubricaApp extends JFrame {
     private javax.swing.JTextField jTextFieldName;
     private javax.swing.JTextField jTextFieldPhoneNo;
     private javax.swing.JTextField jTextFieldSurname;
+    private javax.swing.JTextField jTextFieldUsername;
+    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
 }
