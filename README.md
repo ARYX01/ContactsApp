@@ -8,7 +8,7 @@ server side backend and local desktop app for managing contacts
 
 
 
-2) **application.properties**
+2) resources/**application.properties**
 
 Database name ***turing_rubrica***
 
@@ -27,7 +27,17 @@ If jwt secret token is no longer valid, generate new one with *JWTSecretGenerato
 
 
 
-### App default user for login:
+### Desktop App
+
+resources/**app.config**
+If backend server is not running locally change the base endpoint "http://localhost"
+
+    backend.apiPath=http://localhost:8080/api
+    backend.loginPath=http://localhost:8080/user/login
+
+
+App default **user** for login:
+
 Username = Turing
 
 Password = rubrica123 
