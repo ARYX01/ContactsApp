@@ -486,6 +486,10 @@ public class RubricaApp extends JFrame {
         // Get fields from login form
         String username = jTextFieldUsername.getText();
         String password = new String(jPasswordField.getPassword());
+        if(username.isBlank() || password.isBlank()){
+            JOptionPane.showMessageDialog(jPanelMain, "L' username e la password non possono essere lasciati vuoti", "Attenzione", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         try {
             service.login(username, password);
         } catch (Exception ex) {

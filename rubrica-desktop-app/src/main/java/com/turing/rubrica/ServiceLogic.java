@@ -2,6 +2,7 @@ package com.turing.rubrica;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turing.rubrica.entity.Persona;
+import com.turing.rubrica.entity.Utente;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -17,6 +18,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -27,11 +32,13 @@ enum AppMode {
 }
 
 public class ServiceLogic {
+    private static final Logger logger = Logger.getLogger(ServiceLogic.class.getName());
     
     private static final String LOCAL_SAVE_FILE_NAME = "informazioni.txt";
     private final List<Persona> contacts;
     
     private String apiBasePath;
+    private String apiLoginPath;
     private RestTemplate restTemplate = new RestTemplateBuilder().build();
     
     private AppMode appMode;
@@ -49,29 +56,51 @@ public class ServiceLogic {
 //        contacts.add(personaTest2);
     }
     
-    public void login(String username, String password) throws Exception{
-        // TODO LOGIN API
-        
-        // Check connection to backend
-        loadContactsFromBackend();
-        appMode = AppMode.WEB;
-    
-    }
-    public void loadLocalMode(){
-        try {
-            loadContactsFromFile();
-            appMode = AppMode.LOCAL;
-        } catch (IOException ex) {
-            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     public List<Persona> getContacts() {
         return contacts;
     }
     
     public AppMode getAppMode() {
         return appMode;
+    }
+    
+    public void login(String username, String password) throws Exception{
+        System.out.println("apiBasePath: "+apiBasePath);
+        System.out.println("apiLoginPath: "+apiLoginPath);
+        
+        Utente utenteDaAutenticare = new Utente(username, password);
+        ObjectMapper mapper = new ObjectMapper();
+        try{
+            // LOGIN API
+            ResponseEntity<String> response = restTemplate.postForEntity(apiLoginPath, utenteDaAutenticare, String.class);
+            Map<String, Object> map = mapper.readValue(response.getBody(), Map.class);
+            String jwtToken = map.get("token").toString();
+            restTemplate = new RestTemplateBuilder()
+                    .defaultHeader("Authorization", "Bearer "+jwtToken)
+                    .build();
+        } catch(org.springframework.web.client.ResourceAccessException e){
+            logger.log(Level.SEVERE, "Errore, impossibile connettersi");
+            throw new Exception("Impossibile stabilire una connessione con il server");
+        } catch(RestClientResponseException e){
+            // Deserialize api request error
+            if(e.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(403)))
+                throw new Exception("Accesso non autorizzato, credenziali errate");
+            Map<String, Object> map = mapper.readValue(e.getResponseBodyAsString(), Map.class);
+            throw new Exception(map.get("message").toString());
+        }
+        
+        // Check connection to backend
+        loadContactsFromBackend();
+        appMode = AppMode.WEB;
+    }
+    
+    public void loadLocalMode(){
+        try {
+            loadContactsFromFile();
+            appMode = AppMode.LOCAL;
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
     }
     
     public void addContact(String name, String surname, String address, String phoneNo, Integer age) throws Exception {
@@ -145,7 +174,7 @@ public class ServiceLogic {
             });
             writer.close();
         } catch (IOException ex) {
-            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
             throw new Exception("File di salvataggio inacessibile o corrotto");
         }
     }
@@ -164,22 +193,25 @@ public class ServiceLogic {
             Properties prop = new Properties();
 
             if (input == null) {
-                Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile trovare il file di configurazione: application.properties");
+                logger.log(Level.SEVERE, "Errore, impossibile trovare il file di configurazione: application.properties");
                 return;
             }
             prop.load(input);
             String apiPathTemp = prop.getProperty("backend.apiPath");
             if(apiPathTemp==null || apiPathTemp.isBlank())
-                Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, proprietà 'backend.apiPath' non asseganta o inesistente");
+                logger.log(Level.SEVERE, "Errore, proprietà 'backend.apiPath' non asseganta o inesistente");
             apiBasePath = apiPathTemp;
+            String apiLoginPathTemp = prop.getProperty("backend.loginPath");
+            if(apiLoginPathTemp==null || apiLoginPathTemp.isBlank())
+                logger.log(Level.SEVERE, "Errore, proprietà 'backend.loginPath' non asseganta o inesistente");
+            apiLoginPath = apiLoginPathTemp;
         } catch (IOException ex) {
-            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
     }
     
     private void loadContactsFromBackend() throws Exception{
         contacts.clear();
-        System.out.println("apiBasePath: "+apiBasePath);
         try{
             // Make GET request
             ResponseEntity<Persona[]> response = restTemplate.getForEntity(apiBasePath+"/getContacts", Persona[].class);
@@ -188,8 +220,11 @@ public class ServiceLogic {
             Persona[] contactsFromBackend = response.getBody();
             Collections.addAll(contacts, contactsFromBackend);
         } catch(org.springframework.web.client.ResourceAccessException e){
-            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile connettersi");
+            logger.log(Level.SEVERE, "Errore, impossibile connettersi");
             throw new Exception("Impossibile stabilire una connessione con il server");
+        } catch(org.springframework.web.client.HttpStatusCodeException e){
+            logger.log(Level.SEVERE, "Errore, impossibile connettersi, accesso non autorizzato");
+            throw new Exception("Accesso non autorizzato o credenziali scadute");
         }
     }
     
@@ -198,7 +233,7 @@ public class ServiceLogic {
             // Make DELETE request
             restTemplate.delete(apiBasePath+"/deleteContact/"+id);
         } catch(org.springframework.web.client.ResourceAccessException e){
-            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile connettersi");
+            logger.log(Level.SEVERE, "Errore, impossibile connettersi");
             throw new Exception("Impossibile stabilire una connessione con il server");
         } catch(RestClientResponseException e){
             // Deserialize api request error
@@ -216,7 +251,7 @@ public class ServiceLogic {
                 throw new Exception("Persona non salvata");
             return response;
         } catch(org.springframework.web.client.ResourceAccessException e){
-            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile connettersi");
+            logger.log(Level.SEVERE, "Errore, impossibile connettersi");
             throw new Exception("Impossibile stabilire una connessione con il server");
         } catch(RestClientResponseException e){
             // Deserialize api request error
@@ -232,7 +267,7 @@ public class ServiceLogic {
 //            if(response==null)
 //                throw new Exception("Persona non salvata");
 //        } catch(org.springframework.web.client.ResourceAccessException e){
-//            Logger.getLogger(ServiceLogic.class.getName()).log(Level.SEVERE, "Errore, impossibile connettersi");
+//            logger.log(Level.SEVERE, "Errore, impossibile connettersi");
 //            throw new Exception("Impossibile stabilire una connessione con il server");
 //        } catch(RestClientResponseException e){
 //            // Deserialize api request error
@@ -241,6 +276,5 @@ public class ServiceLogic {
 //            throw new Exception(map.get("message").toString());
 //        }
 //    }
-    
     
 }
