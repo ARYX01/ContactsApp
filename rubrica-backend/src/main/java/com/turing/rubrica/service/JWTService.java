@@ -37,23 +37,26 @@ public class JWTService {
                 .compact();
     }
     
-    public boolean validateJwtToken(String authToken) {
+    public boolean validateJwtToken(String authToken) throws Exception {
         try {
             getClaims(authToken);
-            return true;
         } catch (SignatureException e) {
             logger.log(Level.SEVERE, "Invalid JWT signature: {0}", e.getMessage());
+            throw new Exception("Invalid JWT signature");
         } catch (MalformedJwtException e) {
             logger.log(Level.SEVERE, "Invalid JWT token: {0}", e.getMessage());
+            throw new Exception("Invalid JWT token");
         } catch (ExpiredJwtException e) {
             logger.log(Level.SEVERE, "JWT token is expired: {0}", e.getMessage());
+            throw new Exception("JWT token is expired");
         } catch (UnsupportedJwtException e) {
             logger.log(Level.SEVERE, "JWT token is unsupported: {0}", e.getMessage());
+            throw new Exception("JWT token is unsupported");
         } catch (IllegalArgumentException e) {
             logger.log(Level.SEVERE, "JWT claims string is empty: {0}", e.getMessage());
+            throw new Exception("JWT claims string is empty");
         }
-
-        return false;
+        return true;
     }
     
     public String extractUsername(String jwtToken) {

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,12 +57,40 @@ public class ServiceLogic {
 //        contacts.add(personaTest2);
     }
     
+    private void readAppProperties() {
+        try (InputStream input = ServiceLogic.class.getClassLoader().getResourceAsStream("application.properties")) {
+
+            Properties prop = new Properties();
+
+            if (input == null) {
+                logger.log(Level.SEVERE, "Errore, impossibile trovare il file di configurazione: application.properties");
+                return;
+            }
+            prop.load(input);
+            String apiPathTemp = prop.getProperty("backend.apiPath");
+            if(apiPathTemp==null || apiPathTemp.isBlank())
+                logger.log(Level.SEVERE, "Errore, proprietà 'backend.apiPath' non asseganta o inesistente");
+            apiBasePath = apiPathTemp;
+            String apiLoginPathTemp = prop.getProperty("backend.loginPath");
+            if(apiLoginPathTemp==null || apiLoginPathTemp.isBlank())
+                logger.log(Level.SEVERE, "Errore, proprietà 'backend.loginPath' non asseganta o inesistente");
+            apiLoginPath = apiLoginPathTemp;
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public List<Persona> getContacts() {
         return contacts;
     }
     
     public AppMode getAppMode() {
         return appMode;
+    }
+    
+    public void logout(){
+        restTemplate = new RestTemplateBuilder().build();
+        contacts.clear();
     }
     
     public void login(String username, String password) throws Exception{
@@ -89,15 +118,18 @@ public class ServiceLogic {
             throw new Exception(map.get("message").toString());
         }
         
+        appMode = AppMode.WEB;
         // Check connection to backend
         loadContactsFromBackend();
-        appMode = AppMode.WEB;
+        
+        // TODO revalidate JWT roken before it expire
     }
     
     public void loadLocalMode(){
         try {
-            loadContactsFromFile();
             appMode = AppMode.LOCAL;
+            loadContactsFromFile();
+            
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -115,6 +147,7 @@ public class ServiceLogic {
             saveContactsToFile();
         }
         if(appMode==AppMode.WEB){
+            System.out.println("ADD: "+contactToAdd.toString());
             Persona savedContact = saveContactToWeb(contactToAdd, "/addContact");
             contacts.add(savedContact);
         }
@@ -154,14 +187,19 @@ public class ServiceLogic {
     
     private void loadContactsFromFile() throws IOException{
         contacts.clear();
-        Stream<String> contactLines = Files.lines(Paths.get(LOCAL_SAVE_FILE_NAME));
-        contactLines.forEach(line -> {
+        Path filePath = Paths.get(LOCAL_SAVE_FILE_NAME);
+        try{
+            Stream<String> contactLines = Files.lines(filePath);
+            contactLines.forEach(line -> {
             String[] fields = line.split(";");
             Integer tmpAge = fields[5].equalsIgnoreCase("null") ? null : Integer.valueOf(fields[5]);
             Persona p = new Persona(fields[1], fields[2], fields[3], fields[4], tmpAge);
             p.setId(Integer.parseInt(fields[0]));
             contacts.add(p);
         });
+        } catch(IOException e){
+            Files.createFile(filePath);
+        }
     }
     private void saveContactsToFile() throws Exception{
         System.out.println("SAVING TO FILE");
@@ -186,29 +224,6 @@ public class ServiceLogic {
 //        writer.append(contactLine);
 //        writer.close();
 //    }
-    
-    private void readAppProperties() {
-        try (InputStream input = ServiceLogic.class.getClassLoader().getResourceAsStream("app.config")) {
-
-            Properties prop = new Properties();
-
-            if (input == null) {
-                logger.log(Level.SEVERE, "Errore, impossibile trovare il file di configurazione: application.properties");
-                return;
-            }
-            prop.load(input);
-            String apiPathTemp = prop.getProperty("backend.apiPath");
-            if(apiPathTemp==null || apiPathTemp.isBlank())
-                logger.log(Level.SEVERE, "Errore, proprietà 'backend.apiPath' non asseganta o inesistente");
-            apiBasePath = apiPathTemp;
-            String apiLoginPathTemp = prop.getProperty("backend.loginPath");
-            if(apiLoginPathTemp==null || apiLoginPathTemp.isBlank())
-                logger.log(Level.SEVERE, "Errore, proprietà 'backend.loginPath' non asseganta o inesistente");
-            apiLoginPath = apiLoginPathTemp;
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
-    }
     
     private void loadContactsFromBackend() throws Exception{
         contacts.clear();

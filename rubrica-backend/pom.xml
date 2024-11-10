@@ -75,11 +75,15 @@
     </dependencies>
 
 
+    <!-- TO KEEP COMMENTED FOR DEVELOPING -->
     <!--build>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <repackage>false</repackage>
+                </configuration>
             </plugin>
         </plugins>
     </build-->

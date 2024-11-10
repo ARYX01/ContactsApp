@@ -1,5 +1,6 @@
 package com.turing.rubrica.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turing.rubrica.service.CustomUserDetailsService;
 import com.turing.rubrica.service.JWTService;
 import jakarta.servlet.FilterChain;
@@ -7,10 +8,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,6 +45,9 @@ public class JWTFilter extends OncePerRequestFilter {
             }
         }catch(Exception e){
             Logger.getLogger(JWTFilter.class.getName()).log(Level.SEVERE, "Cannot set user authentication: {0}", e.getMessage());
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.getWriter().write(String.format("{\"message\" : \"%s\"}", e.getMessage()));
+            return;
         }
         
         filterChain.doFilter(request, response);

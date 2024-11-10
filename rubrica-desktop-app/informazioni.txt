@@ -4,3 +4,6 @@
 3;empty;;;;null
 4;wow;lazur;;00000000000;null
 5;test new;LOCAL;;;null
+6;PERSISTANT?;boh;32;43243;null
+7;w;w;w;w;3
+8;e;e;e;e;6

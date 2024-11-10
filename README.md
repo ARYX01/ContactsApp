@@ -8,7 +8,7 @@ server side backend and local desktop app for managing contacts
 
 
 
-2) resources/**application.properties**
+2) **application.properties**
 
 Database name ***turing_rubrica***
 
@@ -29,7 +29,8 @@ If jwt secret token is no longer valid, generate new one with *JWTSecretGenerato
 
 ### Desktop App
 
-resources/**app.config**
+**application.properties**
+
 If backend server is not running locally change the base endpoint "http://localhost"
 
     backend.apiPath=http://localhost:8080/api

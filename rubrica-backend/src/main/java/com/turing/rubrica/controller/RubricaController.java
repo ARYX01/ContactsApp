@@ -1,6 +1,7 @@
 package com.turing.rubrica.controller;
 import com.turing.rubrica.entity.Persona;
 import com.turing.rubrica.service.RubricaService;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,12 +27,12 @@ public class RubricaController {
     }
     
     @PostMapping("/addContact")
-    public Persona addContact(@RequestBody Persona p) throws Exception {
+    public Persona addContact(@Valid @RequestBody Persona p) throws Exception {
         return service.addContact(p);
     }
     
     @PostMapping("/editContact")
-    public Persona editContact(@RequestBody Persona p) throws Exception {
+    public Persona editContact(@Valid @RequestBody Persona p) throws Exception {
         return service.editContact(p);
     }
    

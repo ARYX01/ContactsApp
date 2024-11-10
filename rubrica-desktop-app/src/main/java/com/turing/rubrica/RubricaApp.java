@@ -74,7 +74,6 @@ public class RubricaApp extends JFrame {
         setResizable(false);
         getContentPane().setLayout(new java.awt.CardLayout());
 
-        jPanelLogin.setAlignmentX(0.5F);
         jPanelLogin.setFocusable(false);
         jPanelLogin.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
         jPanelLogin.setMinimumSize(new java.awt.Dimension(500, 600));
@@ -326,7 +325,7 @@ public class RubricaApp extends JFrame {
         jLabelAge.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 2, 2));
         jPanelPersonaForm.add(jLabelAge);
 
-        jFormattedTextFieldAge.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
+        jFormattedTextFieldAge.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("####"))));
         jFormattedTextFieldAge.setToolTipText("Inserisci età contatto");
         jPanelPersonaForm.add(jFormattedTextFieldAge);
 
@@ -508,6 +507,7 @@ public class RubricaApp extends JFrame {
     }//GEN-LAST:event_jButtonLocalModeActionPerformed
 
     private void jButtonLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoutActionPerformed
+        service.logout();
         changePanel("cardLogin");
         setTitle("Rubrica");
     }//GEN-LAST:event_jButtonLogoutActionPerformed

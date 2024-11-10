@@ -19,7 +19,12 @@ public class Persona {
     private String indirizzo;
     @Column(length=18, unique=true)
     private String telefono;
-    private Integer eta;
+    private Integer eta=null;
+
+    @Override
+    public String toString() {
+        return "Persona{" + "id=" + id + ", nome=" + nome + ", cognome=" + cognome + ", indirizzo=" + indirizzo + ", telefono=" + telefono + ", eta=" + eta + '}';
+    }
 
     public Persona(String nome, String cognome, String indirizzo, String telefono, Integer eta) {
         this.nome = nome;
@@ -62,7 +67,7 @@ public class Persona {
     public Integer getEta() {
         return eta;
     }
-    public void setEta(int eta) {
+    public void setEta(Integer eta) {
         this.eta = eta;
     }
     
